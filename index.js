@@ -120,7 +120,14 @@ async function processList(url) {
 
 async function run() {
 	for (const list of lists) {
-		await processList(list)
+		if (!list.trim()) continue
+
+		try {
+			await processList(list)
+		} catch (e) {
+			console.error(`Failed processing list "${list}": ${e.message}`)
+			console.error(e)
+		}
 	}
 }
 
