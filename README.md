@@ -1,0 +1,13 @@
+# plex-letterboxd
+
+Creates Plex collections for Letterboxd lists.
+
+## Usage
+
+`node ./index.js --ip {PLEX_IP} {LIST_TXT_PATH}`
+
+Where `{LIST_TXT_PATH}` is the path to a file with one Letterboxd list URL per line.
+
+## Screenshot
+
+![image](https://user-images.githubusercontent.com/5335625/204074955-5330e41a-90b2-4971-9c7c-f68739e6ee2a.png)
