@@ -19,8 +19,8 @@ const client = new PlexAPI(options.ip);
 const lists = fs.readFileSync(options.listPath, 'utf8').split('\n')
 
 async function getListInfo(url) {
-	const html = await fetch(url.includes('/detail') ? url : urlJoin(url, 'detail'))
-	const $ = cheerio.load(await html.text())
+	let html = await fetch(url.includes('/detail') ? url : urlJoin(url, 'detail'))
+	let $ = cheerio.load(await html.text())
 
 	const title = $('.list-title-intro h1').text().trim()
 	const summary = $('.list-title-intro .body-text').text().trim()
@@ -28,13 +28,22 @@ async function getListInfo(url) {
 	const backdropUrl = $('#backdrop')?.data('backdrop2x')
 
 	const films = []
-	$('.film-detail-content').each((i, el) => {
-		const title = $(el).find('h2 > a').text().trim()
-		const year = parseInt($(el).find('h2 .metadata').text().trim())
-		films.push({
-			title, year
+	while (true) {
+		$('.film-detail-content').each((i, el) => {
+			const title = $(el).find('h2 > a').text().trim()
+			const year = parseInt($(el).find('h2 .metadata').text().trim())
+			films.push({
+				title, year
+			})
 		})
-	})
+
+		const urlNextPage = $('.paginate-nextprev .next')?.attr('href')
+		if (!urlNextPage) break
+
+		// Request next page
+		html = await fetch(new URL(urlNextPage, 'https://letterboxd.com'))
+		$ = cheerio.load(await html.text())
+	}
 
 	return {
 		url,
