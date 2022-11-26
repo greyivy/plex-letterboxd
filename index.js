@@ -58,7 +58,7 @@ async function processList(url) {
 	console.log(`Processing list "${url}"`)
 
 	const list = await getListInfo(url)
-
+	
 	const { machineIdentifier } = (await client.query("/")).MediaContainer
 	const { Metadata: plexFilms } = (await client.query("/library/sections/1/all")).MediaContainer
 
@@ -92,34 +92,36 @@ async function processList(url) {
 			smart: 0,
 			sectionId: 1,
 		})}`)).MediaContainer.Metadata[0]
+	}
 
-		const { ratingKey } = collection
+	const { ratingKey } = collection
 
-		// Update summary
-		await client.putQuery(`/library/sections/1/all?${querystring.stringify({
-			type: 18,
-			id: ratingKey,
-			'summary.value': `${list.summary}\n\n${list.url}`,
-			'summary.locked': 1,
+	// Update summary
+	await client.putQuery(`/library/sections/1/all?${querystring.stringify({
+		type: 18,
+		id: ratingKey,
+		'summary.value': `${list.summary}\n\n${list.url}`,
+		'summary.locked': 1,
+		'title.value': list.title,
+		'title.locked': 1
+	})}`)
+
+	// Set sorting to "Custom"
+	await client.putQuery(`/library/metadata/${ratingKey}/prefs?${querystring.stringify({
+		collectionSort: 2 // Custom
+	})}`)
+
+	// Update backdrop
+	if (list.backdropUrl) {
+		await client.postQuery(`/library/collections/${ratingKey}/arts?${querystring.stringify({
+			url: list.backdropUrl
 		})}`)
-
-		// Set sorting to "Custom"
-		await client.putQuery(`/library/metadata/${ratingKey}/prefs?${querystring.stringify({
-			collectionSort: 2 // Custom
-		})}`)
-
-		// Update backdrop
-		if (list.backdrop) {
-			await client.postQuery(`/library/collections/${ratingKey}/arts?${querystring.stringify({
-				url: list.backdrop
-			})}`)
-		}
 	}
 
 	// Add films
 	console.log(`Adding ${filmKeys.length} films`)
 	for (const key of filmKeys) {
-		await client.putQuery(`/library/collections/${collection.ratingKey}/items?${querystring.stringify({
+		await client.putQuery(`/library/collections/${ratingKey}/items?${querystring.stringify({
 			uri: `server://${machineIdentifier}/com.plexapp.plugins.library${key}`
 		})}`)
 	}
