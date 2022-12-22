@@ -58,7 +58,7 @@ async function processList(url) {
 	console.log(`Processing list "${url}"`)
 
 	const list = await getListInfo(url)
-	
+
 	const { machineIdentifier } = (await client.query("/")).MediaContainer
 	const { Metadata: plexFilms } = (await client.query("/library/sections/1/all")).MediaContainer
 
@@ -130,6 +130,8 @@ async function processList(url) {
 }
 
 async function run() {
+	let exitCode = 0
+
 	for (const list of lists) {
 		if (!list.trim()) continue
 
@@ -138,8 +140,11 @@ async function run() {
 		} catch (e) {
 			console.error(`Failed processing list "${list}": ${e.message}`)
 			console.error(e)
+			exitCode = 1
 		}
 	}
+
+	process.exit(exitCode)
 }
 
 run()
