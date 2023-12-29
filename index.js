@@ -9,10 +9,16 @@ import commandLineArgs from 'command-line-args'
 const optionDefinitions = [
 	{ name: 'ip', type: String },
 	{ name: 'listPath', type: String, multiple: false, defaultOption: true },
+	{ name: 'username', type: String },
+	{ name: 'token', type: String }
 ]
 const options = commandLineArgs(optionDefinitions)
 
-const client = new PlexAPI(options.ip);
+const client = new PlexAPI({
+	hostname : options.ip,
+	username : options.username,
+	token : options.token
+});
 
 // TODO ratings
 
@@ -77,6 +83,11 @@ async function processList(url) {
 		} else {
 			console.warn(`❌ ${listFilm.title} (${listFilm.year})`)
 		}
+	}
+
+	if (!filmKeys.length) {
+		console.warn("Empty film list")
+		return
 	}
 
 	const allCollections = (await client.query(`/library/sections/1/collections`)).MediaContainer.Metadata
